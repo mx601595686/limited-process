@@ -1,0 +1,41 @@
+{
+  "name": "limited-process",
+  "version": "0.0.1",
+  "description": "limit child process requiring module",
+  "main": "./src/index",
+  "engines": {
+    "node": ">=7.0.0"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mx601595686/limited-process.git"
+  },
+  "keywords": [
+    "limited",
+    "process",
+    "limit",
+    "require",
+    "module",
+    "child"
+  ],
+  "author": "wujingtao",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mx601595686/limited-process/issues"
+  },
+  "homepage": "https://github.com/mx601595686/limited-process#readme",
+  "devDependencies": {
+    "babel-plugin-transform-class-properties": "^6.23.0",
+    "expect.js": "^0.3.1",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-sourcemaps": "^2.4.1",
+    "mocha": "^3.2.0"
+  },
+  "dependencies": {
+    "post-stream": "^0.1.6"
+  }
+}
