@@ -2,7 +2,7 @@
   "name": "limited-process",
   "version": "0.0.1",
   "description": "limit child process requiring module",
-  "main": "./src/index",
+  "main": "./bin/main.js",
   "engines": {
     "node": ">=7.0.0"
   },

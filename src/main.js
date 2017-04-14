@@ -46,19 +46,20 @@ module.exports = class LimitedProcess extends EventEmiter {
         }
 
         const child = child_process.spawn(process.execPath, startArgs, {
-            stdio: ['pipe', 'pipe', 'pipe', 'pipe'],
+            stdio: ['pipe', 'pipe', 'pipe', 'pipe', 'pipe'],
             uid: option.uid,
             gid: option.gid,
             cwd: option.cwd,
             env: option.env
         });
-        const ps = new PostStream(child.stdio[3], child.stdio[3]);
+        const ps = new PostStream(child.stdio[3], child.stdio[4]);
         ps.send('_start', option, code);
-        return new LimitedProcess(child, ps);
+        return new LimitedProcess(child, ps, option);
     }
 
     connected = false;
     ps;
+    debugAddress;
     _childProcess;
 
     get pid() {
@@ -77,30 +78,41 @@ module.exports = class LimitedProcess extends EventEmiter {
         return this._childProcess.stdout;
     };
 
-    constructor(childProcess, ps) {
+    constructor(childProcess, ps, option) {
         super();
+
         this.ps = ps;
         this._childProcess = childProcess;
 
+        if (option.debug) {
+            childProcess.stderr.once('data', data => {
+                this.debugAddress = data.toString();
+            });
+        }
+
         ps.data.once('_start_finish', () => {
-            this.emit('connected');
             this.connected = true;
+            this.emit('connected');
         });
 
         childProcess.on('close', (...args) => {
-            this.emit('close', ...args)
+            this.connected = false;
+            this.emit('close', ...args);
         });
 
         childProcess.on('disconnect', (...args) => {
-            this.emit('disconnect', ...args)
+            this.emit('disconnect', ...args);
+            this.connected = false;
         });
 
         childProcess.on('error', (...args) => {
-            this.emit('error', ...args)
+            this.emit('error', ...args);
+            this.connected = false;
         });
 
         childProcess.on('exit', (...args) => {
-            this.emit('exit', ...args)
+            this.emit('exit', ...args);
+            this.connected = false;
         });
     }
 
