@@ -99,11 +99,6 @@ module.exports = class LimitedProcess extends EventEmiter {
             this.emit('close', ...args);
         });
 
-        childProcess.on('disconnect', (...args) => {
-            this.emit('disconnect', ...args);
-            this.connected = false;
-        });
-
         childProcess.on('error', (...args) => {
             this.emit('error', ...args);
             this.connected = false;
@@ -113,10 +108,6 @@ module.exports = class LimitedProcess extends EventEmiter {
             this.emit('exit', ...args);
             this.connected = false;
         });
-    }
-
-    disconnect() {
-        return this._childProcess.disconnect();
     }
 
     kill(signal) {
