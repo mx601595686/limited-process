@@ -25,14 +25,14 @@ Run a js code in separate process, return `LimitedProcess` object.
 
 #### class properties
 * `connected`: \<boolean\> Indicates whether the child process has been connected.
-* `ps`: \<PostStream\> message exchanging channel. In child process will also has a `ps` property at `global`.
-* `debugAddress`: \<string\> If run in debug mode, this will indicate debug net address.
+* `ps`: \<[PostStream](https://github.com/mx601595686/post-stream)\> message exchanging channel. In child process will also has a `ps` property at `global`.
+* `debugAddress`: \<string\> If run in debug mode, this will be debug net address.
 * `pid`, `stderr`, `stdin`, `stdout`: Same to `child_process` module
 
 #### class methods
 
 * `setTimeout(delay)` How much time to turn off the child process
-* `kill(\[signal\])` The child.kill() methods sends a signal to the child process. If no argument is given, the process will be sent the 'SIGTERM' signal.
+* `kill([signal])` The child.kill() methods sends a signal to the child process. If no argument is given, the process will be sent the 'SIGTERM' signal.
 
 #### class events
 
