@@ -86,7 +86,12 @@ module.exports = class LimitedProcess extends EventEmiter {
 
         if (option.debug) {
             childProcess.stderr.once('data', data => {
-                this.debugAddress = data.toString();
+                data = data.toString();
+                const match = data.match(/(?!\s)(chrome-devtools.+)(?!\b)/g);
+                if (match.length > 0){
+                    this.debugAddress = match[0];
+                    this.emit('debugStart');
+                }
             });
         }
 
