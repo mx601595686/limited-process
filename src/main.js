@@ -38,7 +38,7 @@ module.exports = class LimitedProcess extends EventEmiter {
         }
     }
 
-    start(option = {debug: false}) {
+    async start(option = {debug: false}) {
         if (this.isRunning) return;
 
         const startArgs = [path.resolve(__dirname, './child_process.js')];
@@ -78,35 +78,32 @@ module.exports = class LimitedProcess extends EventEmiter {
         this.isRunning = true;
         this.startTime = new Date();
         this._ps = new PostStream(this._childProcess.stdio[3], this._childProcess.stdio[4]);
-        this._ps.data.on('__invoke', this._receivedInvoke);
+        this._ps.data.on('_invoke', this._receivedInvoke.bind(this));
 
         //endregion
 
+        let debugAddress;
         if (option.debug) {
-            return new Promise((resolve, reject) => {
+            debugAddress = await new Promise((resolve, reject) => {
                 this._childProcess.stderr.once('data', data => {
                     data = data.toString();
                     const match = data.match(/(?!\s)(chrome-devtools.+)(?!\b)/g);
                     if (match.length > 0) {
-                        resolve({
-                            address: match[0],
-                            start: () => {
-                                this._sendInvoke(true, 'start', this.requireList, this.jsCode, this.fileName);
-                            }
-                        })
+                        resolve(match[0]);
                     } else {
                         reject(new Error('parse debug path failed：' + data));
                     }
                 });
             });
-        } else {
-            this._sendInvoke(true, 'start', this.requireList, this.jsCode, this.fileName);
         }
+        await this._sendInvoke(true, 'start', this.requireList, this.jsCode, this.fileName);
+
+        return debugAddress;
     }
 
-    invoke = new Proxy(this._sendInvoke.bind(null, false), {
+    invoke = new Proxy(this._sendInvoke.bind(this, false), {
         get(target, property){
-            return target.bind(null, property);
+            return target.bind(this, property);
         }
     });
 
@@ -132,25 +129,26 @@ module.exports = class LimitedProcess extends EventEmiter {
         }
     };
 
-    _receivedInvoke = async (isInternal, functionName, args, callback) => {
+    async _receivedInvoke(isInternal, functionName, args, callback) {
         const service = isInternal ? this._internalService : this.service;
 
         try {
-            const result = await service[name](...args);
+            const result = await service[functionName](...args);
             this._ps.send(callback, undefined, result);
         } catch (e) {
             this._ps.send(callback, {message: e.message, stack: e.stack});
         }
     };
 
-    _sendInvoke = (isInternal, functionName, ...args) => {
+    _sendInvoke(isInternal, functionName, ...args) {
         const callback = '_' + Math.random();
         this._ps.send('_invoke', isInternal, functionName, args, callback);
         return new Promise((resolve, reject) => {
             this._ps.data.once(callback, function (err, data) {
                 if (err !== undefined)
                     reject(err);
-                resolve(data)
+                else
+                    resolve(data)
             });
         });
     };
@@ -170,24 +168,34 @@ module.exports = class LimitedProcess extends EventEmiter {
     //region wrap method
 
     async kill(signal) {
-        await  this._sendInvoke(true, 'close');
-        this._childProcess && this._childProcess.kill(signal);
+        if (this.isRunning) {
+            await  this._sendInvoke(true, 'close');
+            this._childProcess.kill(signal);
+        }
     }
 
     get pid() {
-        return this._childProcess && this._childProcess.pid;
+        if (this.isRunning) {
+            return this._childProcess.pid;
+        }
     };
 
     get stderr() {
-        return this._childProcess && this._childProcess.stderr;
+        if (this.isRunning) {
+            return this._childProcess.stderr;
+        }
     };
 
     get stdin() {
-        return this._childProcess && this._childProcess.stdin;
+        if (this.isRunning) {
+            return this._childProcess.stdin;
+        }
     };
 
     get stdout() {
-        return this._childProcess && this._childProcess.stdout;
+        if (this.isRunning) {
+            return this._childProcess.stdout;
+        }
     };
 
     //endregion

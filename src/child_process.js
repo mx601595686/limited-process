@@ -8,10 +8,12 @@ const vm = require('vm');
 
 const internalService = {
     async start(requireList, jsCode, fileName){
-        global.lp.requireList = requireList.map(name => require(name));
+        requireList.forEach(name => {
+            global.lp.requireList[name] = require(name);
+        });
         process.mainModule = undefined;
 
-        vm.runInThisContext('debugger;' + jsCode, {
+        vm.runInThisContext('debugger;\n' + jsCode, {
             filename: fileName
         });
 
@@ -46,7 +48,8 @@ function sendInvoke(isInternal, functionName, ...args) {
         ps.data.once(callback, function (err, data) {
             if (err !== undefined)
                 reject(err);
-            resolve(data)
+            else
+                resolve(data)
         });
     });
 }
@@ -74,14 +77,14 @@ process.on('unhandledRejection', errorHandler);
 //endregion
 
 global.lp = {
-    involve: new Proxy(sendInvoke.bind(null, false), {
+    invoke: new Proxy(sendInvoke.bind(null, false), {
         get(target, property){
             return target.bind(null, property);
         }
     }),
-    requireList: [],
+    requireList: {},
     service: {},
-    onClose: Promise.resolve(),
-    onStart: Promise.resolve(),
+    onClose: () => Promise.resolve(),
+    onStart: () => Promise.resolve(),
     onError: () => false
 };
