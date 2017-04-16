@@ -1,6 +1,6 @@
 {
   "name": "limited-process",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Safely run code in separate process. Limit child process requiring module",
   "main": "./bin/main.js",
   "engines": {
