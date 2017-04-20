@@ -37,3 +37,13 @@ Before child process close, child process\`s `global.lp.onClose` will be trigger
 
 * `childProcessError`: When child process generate a uncaught exception.
 * `close`, `error`, `exit`: Same to `child_process` module
+
+### child process global
+In child process a `lp` object will be exposed at `global`.
+* `invoke`: Invoke parent service.Usage same to parent `invoke`.
+* `requireList`: Consisting of parental indicated modules.
+* `service`: A object consist of function, parent process can use `invoke` to invoke those functions.
+* `onClose`: This will be triggered before child process closing.
+* `onStart`: This will be triggered after child process has started.
+* `onError`: This will be triggered when child process has a unCaughtException.If you return true, this Exception will not be sended to parent `error` property.
+
