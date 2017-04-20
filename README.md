@@ -4,38 +4,36 @@ Safely run code in separate process. Limit child process requiring module.
 
 `npm install --save limited-process`
 
-### runFile(filePath, option)
-Run a js file in separate process, return `LimitedProcess` object.
+### class constructor
+`constructor(fileName[, jsCode])`
 
-* option
-    * debug: \<boolean\> | \<string\> Is running in debug mode? Use `--inspect` flag to start node. If pass string can indicate debug port.
-    * filename: \<string\> js file name ,default is filePath.
-    * require: \<Array\> module name array. In child process those module will be required and exposed at `global.requireList`.
-    * uid: \<number\> Sets the user identity of the process.
-    * gid: \<number\> Sets the group identity of the process.
-    * cwd: \<string\> Current working directory of the child process
-    * env: \<Object\> Environment key-value pairs
+`fileName` : Js file\`s absolute path. If you provide `jsCode` parameter, the `fileName` will be this code\`s alias, use for stack trace.
 
-### runCode(code, option)
-Run a js code in separate process, return `LimitedProcess` object.
+`jsCode` : A javascript code string, it will be run in other process.
 
-* option : same with `runFile`
+### class properties
+* `fileName`: `jsCode` correspond `filename`, use for stack trace.
+* `jsCode`: A javascript code string, it will be run in other process.
+* `requireList`: A module name array, in child process all those module names will be required and exposed at `global.lp.requireList`.
+* `service` A object consist of function, child process can use `global.lp.invoke` to invoke those functions.
+ Note than, those function can not return a `function`. If you need running a async task, you can return a promise object.
+* `cpuUsage` Child process cpu usage. If child process is not running, this property will be undefined.
+* `memoryUsage` Child process memory usage. If child process is not running, this property will be undefined.
+* `errors`: A array consist of child process uncaught exception.
+* `isRunning`: Indicates whether the child process is running.
+* `startTime`: Child process start time.
+* `invoke`: you can use this to invoke child process `global.lp.service`. Like this, `invoke(functionName[,...args])` or `invoke.functionName([...args])`.
 
-### LimitedProcess
-
-#### class properties
-* `connected`: \<boolean\> Indicates whether the child process has been connected.
-* `ps`: \<[PostStream](https://github.com/mx601595686/post-stream)\> message exchanging channel. In child process will also has a `ps` property at `global`.
-* `debugAddress`: \<string\> If run in debug mode, this will be debug net address.
 * `pid`, `stderr`, `stdin`, `stdout`: Same to `child_process` module
 
-#### class methods
-
+### class methods
+* `async start(option = {debug: false})`: Start child process.
+    * `debug`: Is using `--inspect` flag to run child process. If `debug` is true, `start()` will return a debug net address string.
 * `setTimeout(delay)` How much time to turn off the child process
-* `kill([signal])` The child.kill() methods sends a signal to the child process. If no argument is given, the process will be sent the 'SIGTERM' signal.
+* `async kill([signal])` The child.kill() methods sends a signal to the child process. If no argument is given, the process will be sent the 'SIGTERM' signal.
+Before child process close, child process\`s `global.lp.onClose` will be triggered.
 
-#### class events
+### class events
 
-* `connected`: When child process ready.
-* `debugStart`: When child process debug is ready.
+* `childProcessError`: When child process generate a uncaught exception.
 * `close`, `error`, `exit`: Same to `child_process` module

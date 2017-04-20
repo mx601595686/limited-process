@@ -26,7 +26,7 @@ const internalService = {
 
 let readable = fs.createReadStream(null, {fd: 4});
 let writable = fs.createWriteStream(null, {fd: 3});
-const ps = new PostStream(readable, writable);
+const ps = new PostStream({readable, writable});
 
 //receive Invoke
 ps.data.on('_invoke', async function (isInternal, functionName, args, callback) {

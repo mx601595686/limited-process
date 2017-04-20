@@ -36,6 +36,6 @@
     "mocha": "^3.2.0"
   },
   "dependencies": {
-    "post-stream": "^0.1.6"
+    "post-stream": "^0.2.0"
   }
 }

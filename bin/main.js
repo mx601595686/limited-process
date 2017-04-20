@@ -87,7 +87,10 @@ module.exports = class LimitedProcess extends EventEmiter {
 
         this.isRunning = true;
         this.startTime = new Date();
-        this._ps = new PostStream(this._childProcess.stdio[3], this._childProcess.stdio[4]);
+        this._ps = new PostStream({
+            readable: this._childProcess.stdio[3],
+            writable: this._childProcess.stdio[4]
+        });
         this._ps.data.on('_invoke', this._receivedInvoke.bind(this));
 
         //endregion
